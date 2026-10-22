@@ -1,0 +1,90 @@
+RETROSPECTIVA - TREI IMBUNATATIRI PROPUSE
+
+Contextul folosit
+- Testul API pentru Taskul 1 (KI-05) a fost rulat de doua ori. Playwright a raportat fiecare executie
+  ca passed deoarece testul este marcat expected-failure cu test.fail(true, ...); defectul verificat
+  este ca respingerea unei cereri de plata modifica soldurile.
+- Slide-ul de raportare al suitei arata 223 teste passed, 0 failed, 0 flaky si 1 skipped, cu o durata
+  de 12.1 minute, un singur worker si o baza de date partajata. Proiectele din grafic sunt API, UI desktop,
+  UI mobile si E2E.
+- Testele pregatite pentru Taskurile 2-7 nu au fost rulate in aceasta etapa si nu sunt numarate aici.
+
+IMBUNATATIREA 1 - Extinderea testelor API pentru integritatea datelor
+
+Observatie
+Testul KI-05 arata de ce un status HTTP corect nu este suficient: operatia poate raspunde cu succes,
+dar poate schimba incorect date financiare. Acelasi tip de risc exista la stergerea contactelor cu ID
+necunoscut (KI-01), unde trebuie verificat ca datele raman neschimbate.
+
+Propunere
+Pentru operatiile cu risc de modificare a datelor, testele sa verifice atat raspunsul API, cat si starea
+inainte si dupa cerere. Exemple: soldurile ambilor utilizatori dupa respingerea unei cereri si numarul/
+continutul contactelor dupa un DELETE cu ID inexistent. Pastrati test.fail doar cat timp defectul cunoscut
+exista; dupa remediere, eliminati marcajul si pastrati testul ca regresie.
+
+Cum masuram imbunatatirea
+Testele trec de doua ori consecutiv dupa remediere, verifica valorile persistate si nu lasa datele
+schimbate accidental. Pentru KI-05, verificarea exista deja si a fost repetata de doua ori; pentru KI-01,
+testul pregatit trebuie rulat dupa integrarea in proiect.
+
+IMBUNATATIREA 2 - Izolarea bazei de date pentru rulare mai rapida si mai sigura
+
+Observatie
+Raportul indica 12.1 minute, un singur worker si o baza JSON partajata. Configuratia Playwright confirma
+ca workerii sunt tinuti la 1 deoarece fiecare test re-seed-uieste aceeasi baza. Aceasta limiteaza
+paralelizarea si poate face testele dependente unele de altele daca mai multi workeri ar modifica aceleasi
+date.
+
+Propunere
+Oferiti fiecarui worker o baza temporara separata sau resetati datele printr-un mecanism izolat per test.
+Abia dupa aceea cresteti numarul de workeri pentru proiectele care pot rula in paralel. Pastrati testele
+E2E care verifica mai multi utilizatori in aceeasi baza izolata a testului, nu intr-o baza comuna cu alte
+teste.
+
+Cum masuram imbunatatirea
+Rulati aceeasi suita de doua ori cu mai multi workeri si comparati durata cu reperul de 12.1 minute.
+Verificati ca ambele rulaje au 0 fail-uri neasteptate, 0 teste flaky si acelasi rezultat functional.
+Nu cresteti workerii pana cand izolarea datelor nu este verificata.
+
+IMBUNATATIREA 3 - UI-ul ramane utilizabil dupa o perioada in fundal
+
+Problema observata
+Dupa ce site-ul ramane inactiv sau in fundal aproximativ 5 minute, la revenire interfata poate deveni
+nefunctionala sau nu mai raspunde normal. Utilizatorul se poate intoarce la o pagina care pare deschisa,
+dar nu mai poate continua actiunea in siguranta.
+
+Propunere
+Investigati si imbunatatiti revenirea din inactivitate: la reactivarea tab-ului, aplicatia ar trebui sa
+verifice sesiunea si starea datelor, sa reincarce informatiile necesare si sa permita utilizatorului sa
+continue. Daca sesiunea a expirat, afisati clar ca este necesara autentificarea din nou si directionati
+utilizatorul la sign-in, ideal pastrand destinatia la care se intorcea. Daca problema este o cerere de
+retea blocata sau esuata, afisati o stare de incarcare, un mesaj de eroare si o optiune de retry, in loc
+sa lasati controalele aparent active dar nefunctionale.
+
+Nu presupunem inca daca sursa este expirarea sesiunii, starea locala XState/localStorage, o cerere blocata
+sau throttling-ul browserului. Primul pas este reproducerea cu timpi notati si urmarirea cererilor din
+Network si a erorilor din Console, apoi alegerea remedierii potrivite.
+
+Scenariu de verificare / acceptanta
+1. Autentifica-te, deschide un flux sau formular si lasa tab-ul in fundal cel putin 5 minute.
+2. Revino in tab si incearca o actiune obisnuita, de exemplu deschiderea feed-ului sau trimiterea unui
+   formular valid.
+3. Daca sesiunea este valida, aplicatia reia incarcarea si actiunile functioneaza fara refresh manual.
+4. Daca sesiunea a expirat, utilizatorul primeste o explicatie si poate sa se autentifice din nou; pagina
+   nu ramane blocata fara feedback.
+5. Pentru o eroare de retea temporara, exista feedback vizibil si o cale de retry.
+
+Testare propusa
+Adaugati un test pentru revenirea din fundal care controleaza starea sesiunii si raspunsurile API, astfel
+incat sa nu fie nevoie sa astepte efectiv 5 minute la fiecare rulare. Completati-l cu o verificare manuala
+cu tab-ul in fundal timp de aproximativ 5 minute pentru a reproduce comportamentul real al browserului.
+Acoperiti separat sesiunea valida, sesiunea expirata si eroarea de retea.
+
+Cum masuram imbunatatirea
+La revenirea din fundal, utilizatorul primeste feedback imediat si poate continua sau se poate autentifica
+din nou fara refresh manual. Testele pentru cele trei stari trec repetabil, iar verificarea manuala dupa
+5 minute nu mai reproduce blocarea.
+
+Nota
+Valorile 223/0/0/1 si 12.1 minute sunt cele din slide-ul de raportare furnizat. Singurul test verificat
+direct in aceasta etapa este cel pentru Taskul 1, rulat de doua ori ca expected failure.
