@@ -1,0 +1,50 @@
+TASK 2 - KI-01: DELETE cu ID de contact necunoscut sterge toate contactele
+
+RAPORT DE BUG (pregatit pentru /tap-bug)
+Titlu: DELETE /contacts/{contactId} cu un ID inexistent sterge toate contactele
+Severitate: High
+Zona: API / integritatea datelor
+
+Preconditii
+- Aplicatia RWA si API-ul ruleaza local.
+- Baza de date este resetata cu POST /testData/seed.
+- Utilizatorul este autentificat ca Heath93 (parola: s3cret). Testul API face autentificarea prin fixture.
+- Seed-ul contine contacte.
+
+Pasi de reproducere
+1. Salveaza lista de contacte inainte de cerere (GET /testData/contacts sau GET /contacts/Heath93).
+2. Trimite DELETE /contacts/abc123XYZ. ID-ul are format valid, dar nu exista in datele seed-uite.
+3. Citeste din nou lista de contacte.
+
+Rezultatul asteptat
+- API-ul raspunde cu 404, deoarece contactul cerut nu exista.
+- Niciun contact nu este sters; datele de dupa cerere sunt identice cu cele de dinainte.
+
+Rezultatul actual
+- API-ul raspunde cu 200.
+- Sunt sterse toate contactele din baza de date, nu doar un contact potrivit.
+
+Impact
+O cerere DELETE cu un ID inexistent poate sterge intreaga lista de contacte. Asta poate afecta feed-ul
+Friends si alte functii care depind de contacte. Este o problema de integritate a datelor cu severitate mare.
+
+Indicatie tehnica / cauza probabila
+In backend/database.ts, removeContactById cauta contactul si trimite rezultatul catre lowdb remove().
+Daca ID-ul nu exista, cautarea intoarce undefined; operatia remove ajunge astfel sa potriveasca fiecare rand.
+Ruta din backend/contact-routes.ts raspunde in prezent intotdeauna cu status 200.
+
+Despre test
+Fisierul de test compara toate contactele inainte si dupa DELETE si verifica statusul raspunsului.
+Este marcat cu test.fail(true, ...) pentru ca KI-01 este un defect cunoscut. In implementarea actuala,
+Playwright inregistreaza ca asteptat esecul asertiunilor. Dupa remedierea bugului, elimina linia test.fail;
+testul ar trebui atunci sa treaca si sa previna reaparitia defectului.
+
+Unde se pune fisierul de test
+Copiaza ki-01-unknown-contact-delete.api.spec.ts in:
+playwright/tests/api/ki-01-unknown-contact-delete.api.spec.ts
+
+Comanda de rulare (din folderul playwright)
+npx playwright test --project=api tests/api/ki-01-unknown-contact-delete.api.spec.ts
+
+Prompt sugerat pentru agentul TAP /tap-bug
+/tap-bug DELETE /contacts/abc123XYZ raspunde cu 200 si sterge toate contactele din baza de date seed-uita, desi ID-ul nu exista. Rezultatul asteptat este 404 si nicio modificare a datelor. Scrie un raport de bug KI-01 reproductibil, cu dovezi; nu remedia bugul.
