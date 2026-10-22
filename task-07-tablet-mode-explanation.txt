@@ -1,0 +1,46 @@
+TASK 7 - G-14: tablet viewport la 500x800
+
+CE OBSERVA TESTUL
+Testul foloseste proiectul Playwright ui-tablet, setat la 500x800. Dupa autentificare, compara doua
+lucruri: layout-ul de navigare randat de aplicatie si rezultatul helper-ului isMobile() folosit de teste.
+Ataseaza screenshot-ul paginii si g14-tablet-diagnostics.txt la raportul Playwright.
+
+CE SE POATE STRICA (G-14)
+Proiectul foloseste un cutoff de 414px in isMobile(), dar layout-ul aplicatiei trece la navigarea mobila
+la breakpoint-ul MUI xs, care tine pana la aproximativ 600px. La latimea 500px aplicatia afiseaza butonul
+pentru meniul mobil si ascunde meniul lateral, dar helper-ul isMobile() intoarce false. Testele existente
+care folosesc helper-ul pot atunci sa verifice comportamentul de desktop la o latime cu layout mobil.
+
+ADAUGA PROIECTUL IN playwright/playwright.config.ts
+Insereaza obiectul urmator in lista projects (de exemplu langa ui-mobile):
+
+{
+  name: "ui-tablet",
+  testDir: "./tests/ui",
+  use: {
+    ...devices["Desktop Chrome"],
+    viewport: { width: 500, height: 800 },
+    isMobile: false,
+  },
+},
+
+isMobile: false pastreaza motorul/input-ul Chrome desktop si testeaza dimensiunea viewport-ului. Scopul
+exercitiului este breakpoint-ul CSS; nu emuleaza dispozitiv tactil sau User-Agent de telefon.
+
+UNDE SE PUNE FISIERUL DE TEST
+Copiaza tablet-breakpoint-g14.ui.spec.ts in:
+playwright/tests/ui/tablet-breakpoint-g14.ui.spec.ts
+
+COMANDA DE RULARE (din folderul playwright)
+npx playwright test --project=ui-tablet tests/ui/tablet-breakpoint-g14.ui.spec.ts
+
+CE SA NOTEZI IN RAPORT
+1. Viewport-ul efectiv: 500x800.
+2. Daca meniul lateral este vizibil sau ascuns si daca butonul de meniu mobil este vizibil.
+3. Valoarea isMobile(page) din diagnostics.
+4. Rezultatele asteptate si observate, plus screenshot-ul din raportul HTML.
+
+TEST EXPECTED-FAIL
+Linia test.fail(true, ...) marcheaza ca asteptat defectul G-14: helper-ul curent intoarce false la 500px,
+desi app-ul foloseste layout mobil. Dupa ce echipa aliniaza helper-ul cu breakpoint-ul UI, elimina test.fail
+si lasa asertiunile sa protejeze testele responsive.
