@@ -1,0 +1,33 @@
+TASK 4 - Auditarea accesibilitatii notificarilor (A11Y-02)
+
+CE VERIFICA TESTUL
+Testul deschide pagina Notifications dupa autentificare si ruleaza axe-core pe pagina. Apoi cauta
+incalcari serioase ale regulii "link-name": link-uri care nu au un nume accesibil pentru cititoarele
+de ecran. Raportul complet axe este atasat ca artefact testului: axe-notifications.json.
+
+PROBLEMA A11Y-02
+Catalogul de probleme cunoscute spune ca pe ecranele aplicatiei pot exista link-uri fara nume accesibil.
+Un link numai cu pictograma poate arata clar vizual, dar cititorul de ecran poate sa nu poata spune unde
+duce. In raportul axe, verifica exact selectorii si mesajul fiecarui element raportat; nu presupune ca
+toate link-urile notificarilor sunt cauza.
+
+FIX POSIBIL DE PROPUS
+Adauga un nume accesibil descriptiv link-ului, de exemplu aria-label="View transaction details" pentru
+un link cu pictograma care deschide detaliile tranzactiei. Daca link-ul are deja text vizibil, acel text
+poate furniza numele accesibil. Foloseste aria-label doar cand textul vizibil nu este suficient.
+Propunerea finala trebuie sa foloseasca actiunea si destinatia concrete aratate de selectorul din raport.
+
+DE CE ESTE MARCAT test.fail
+Testul descrie comportamentul corect, dar A11Y-02 este catalogata ca problema existenta. Linia
+test.fail(true, ...) marcheaza drept asteptat esecul testului cat timp problema persista. Dupa aplicarea
+si verificarea fixului, elimina test.fail si mentine verificarea ca regresie.
+
+UNDE SE PUNE FISIERUL
+Copiaza notifications-link-name.a11y.spec.ts in:
+playwright/tests/ui/notifications-link-name.a11y.spec.ts
+
+COMANDA DE RULARE (din folderul playwright)
+npx playwright test --project=ui-desktop tests/ui/notifications-link-name.a11y.spec.ts
+
+PROMPT SUGERAT PENTRU AGENTUL /tap-a11y
+/tap-a11y auditeaza pagina /notifications pentru WCAG A/AA, folosind rezultatele axe si concentreaza-te pe A11Y-02 (link-name). Raporteaza selectorii exacti si de ce link-ul nu are un nume accesibil; propune o corectie concreta cu aria-label sau text accesibil, fara sa modifici codul.
