@@ -1,0 +1,34 @@
+TASK 6 - Bob vede plata trimisa de Alice
+
+SCENARIUL
+Testul porneste doua contexte de browser independente, fiecare cu propriul cookie jar si sesiune:
+Alice foloseste pagina Playwright principala, iar Bob o pagina deschisa intr-un BrowserContext separat.
+Alice trimite o plata lui Bob. Apoi Bob isi reincarca propriul feed si verifica faptul ca plata apare
+acolo si ca soldul lui a crescut cu suma trimisa.
+
+DE CE SUNT DOUA CONTEXTE
+Doua tab-uri in acelasi context ar impartasi cookie-urile si sesiunea. BrowserContext separat modeleaza
+doi utilizatori autentificati simultan, asa cum se intampla in doua browsere sau pe doua dispozitive.
+
+NOTA DESPRE "LIVE"
+Testul verifica actualizarea vizibila pentru Bob dupa ce isi reincarca/actualizeaza feed-ul, intr-o sesiune
+separata. Nu presupune ca aplicatia are actualizare push in timp real prin WebSocket.
+
+PASI DE TEST
+1. Autentifica Alice si Bob separat.
+2. Alice trimite o plata de 25 catre Bob, cu o descriere unica.
+3. Confirma ca API-ul a creat plata si UI-ul Alicei afiseaza confirmarea.
+4. Bob reincarca feed-ul personal.
+5. Verifica ca tranzactia cu descrierea unica apare in feed si ca soldul lui Bob a crescut cu 25 de dolari.
+
+UNDE SE PUNE FISIERUL
+Copiaza bob-sees-alice-payment.e2e.spec.ts in:
+playwright/tests/e2e/bob-sees-alice-payment.e2e.spec.ts
+
+COMANDA DE RULARE (din folderul playwright)
+npx playwright test --project=e2e tests/e2e/bob-sees-alice-payment.e2e.spec.ts
+
+DATE SI IZOLARE
+Fixture-ul API reseteaza baza de date la inceputul testului. Descrierea contine un timestamp pentru a
+identifica fara ambiguitate plata creata de acest test. Contextul lui Bob este inchis la final, inclusiv
+daca o asertiune esueaza.
