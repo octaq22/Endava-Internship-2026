@@ -1,0 +1,42 @@
+TASK 3 - KI-31: Failed payment shows an error
+
+SCOPUL TESTULUI
+Testul simuleaza o eroare 500 de la POST /transactions si verifica daca interfata ii comunica
+utilizatorului ca plata a esuat. Nu trimite o plata reala: Playwright intercepteaza cererea si raspunde
+cu 500.
+
+RAPORT DE BUG (pentru /tap-bug)
+Titlu: Interfata confirma plata inainte ca API-ul sa confirme tranzactia
+Severitate: Medium
+Zona: UI / tranzactii / gestionarea erorilor
+
+Pasi de reproducere
+1. Autentifica-te in aplicatie.
+2. Deschide formularul New Transaction.
+3. Selecteaza un utilizator, completeaza suma si descrierea si alege Submit Payment.
+4. Fa ca POST /transactions sa raspunda cu HTTP 500.
+
+Rezultatul asteptat
+- Interfata afiseaza un mesaj de eroare clar.
+- Nu afiseaza mesajul de succes "Transaction Submitted!".
+- Nu trece la pasul final care ofera optiunea de a crea alta tranzactie.
+
+Rezultatul actual, conform KI-31
+- Mesajul "Transaction Submitted!" si pasul 3 apar inainte ca API-ul sa raspunda.
+- Daca POST /transactions esueaza, utilizatorul nu primeste un mesaj de eroare si poate crede ca plata
+  a fost trimisa cu succes.
+
+DE CE ESTE MARCAT test.fail
+Testul descrie comportamentul corect, dar KI-31 este defectul cunoscut. Linia test.fail(true, ...) ii spune
+lui Playwright sa trateze esecul asteptat al asertiunilor ca expected failure. Dupa remedierea interfetei,
+testul va deveni unexpected pass pana cand elimini acea linie; apoi testul trebuie sa treaca normal.
+
+UNDE SE PUNE FISIERUL
+Copiaza failed-payment-error.ui.spec.ts in:
+playwright/tests/ui/failed-payment-error.ui.spec.ts
+
+COMANDA DE RULARE (din folderul playwright)
+npx playwright test --project=ui-desktop tests/ui/failed-payment-error.ui.spec.ts
+
+PROMPT SUGERAT PENTRU /tap-bug
+/tap-bug KI-31: cand POST /transactions raspunde cu 500 in timpul unei plati, UI afiseaza "Transaction Submitted!" si pasul 3 inainte de raspunsul API si nu afiseaza eroare. Asteptat: mesaj de eroare si lipsa mesajului de succes. Reproduce cu un stub 500, colecteaza dovada si scrie raportul; nu remedia defectul.
