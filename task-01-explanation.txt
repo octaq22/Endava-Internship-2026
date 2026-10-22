@@ -1,0 +1,7 @@
+﻿Task 1 — Reject must not move money (G-01 / KI-05)
+
+The test starts from seeded data and finds a pending payment request addressed to the authenticated test user. It records the sender's and receiver's balances, rejects the request through PATCH /transactions/:transactionId, then confirms the API returned 204, the request is marked rejected, and neither balance changed.
+
+The test is annotated as an expected failure for KI-05 because the current RWA implementation processes a pending request as a transfer while updating its request status, even when the requested status is "rejected". Playwright reports this known failure as expected. Once the application bug is fixed, remove the test.fail annotation; an unexpected pass then indicates the annotation is obsolete.
+
+This branch currently contains only tema1.docx and does not include the RWA Playwright project or its dependencies. Therefore the spec is a submission artifact here and cannot run from this branch alone. To execute it, place the spec in the RWA project's playwright/tests/api folder and run it with that project's Playwright configuration while its API is running.
