@@ -1,0 +1,26 @@
+TASK 5 - Starea fara conturi bancare
+
+CE VERIFICA TESTUL
+Testul simuleaza raspunsul GraphQL ListBankAccount cu o lista goala. Apoi verifica faptul ca utilizatorul
+vede mesajul "No Bank Accounts", nu exista randuri de conturi bancare si apare dialogul de onboarding.
+Nu modifica baza de date si nu creeaza un cont real.
+
+FACTORY SI STUB
+- buildBankAccount este factory-ul standard de conturi bancare din proiect.
+- buildList(buildBankAccount, 0, ...) produce o lista determinista cu zero conturi.
+- stubApi intercepteaza cererea GraphQL ListBankAccount si returneaza acea lista goala.
+
+VERIFICAREA IN AMBELE VIEWPORT-URI
+Config-ul Playwright are proiectele ui-desktop si ui-mobile. Ruleaza separat:
+
+Din folderul playwright:
+npx playwright test --project=ui-desktop tests/ui/empty-bank-accounts.ui.spec.ts
+npx playwright test --project=ui-mobile tests/ui/empty-bank-accounts.ui.spec.ts
+
+UNDE SE PUNE FISIERUL DE TEST
+Copiaza empty-bank-accounts.ui.spec.ts in:
+playwright/tests/ui/empty-bank-accounts.ui.spec.ts
+
+REZULTATUL ASTEPTAT
+In desktop si mobil, pagina conturilor bancare arata starea goala si dialogul de onboarding, fara elemente
+de lista pentru conturi.
