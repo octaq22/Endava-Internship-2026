@@ -12,7 +12,6 @@ public class HomePage {
     private Locator logoutButton;
     private Locator transactionList;
     private Locator myAccountLink;
-    private Locator newButton;
 
     public void init(Page page) {
         this.page = page;
@@ -20,7 +19,6 @@ public class HomePage {
         transactionList = page.locator("//div[@data-test='transaction-list']");
         myAccountLink = page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("My Account"));
         transactionList.isVisible();
-        newButton = page.getByText("NEW");
     }
 
     public boolean isLogoutButtonVisible() {
@@ -37,10 +35,10 @@ public class HomePage {
         myAccountPage.init(page);
         return myAccountPage;
     }
-    public void clickNew() {
-        newButton.click();
-    }
 
+    public void clickNew() {
+        page.getByText("NEW").click();
+    }
 }
 
 
